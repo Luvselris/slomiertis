@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin ♡ slomiertis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #fff5f7;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --pastel-pink: #ffd7e2;
+      --soft-pink: #fff0f4;
+      --primary-pink: #ff85a2;
+      --primary-dark: #7a5059;
+      --text-muted: #bda1a8;
+      --border-soft: #fde8ef;
+      --btn-gradient: linear-gradient(135deg, #ff9ebb 0%, #ff7096 100%);
+      --glow-shadow: 0 10px 28px rgba(255, 175, 195, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', 'Mitr', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #fff0f3 0%, #fff6f8 60%, #ffedf2 100%);
+      color: var(--primary-dark);
+      min-height: 100vh;
+      padding: 24px 16px 80px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    #loginView {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border-radius: 30px;
+      padding: 38px 24px;
+      box-shadow: var(--glow-shadow);
+      border: 2px solid #ffffff;
+      text-align: center;
+    }
+
+    .login-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 8px;
+    }
+
+    .login-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+    }
+
+    .pin-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border-soft);
+      border-radius: 20px;
+      font-size: 24px;
+      letter-spacing: 12px;
+      text-align: center;
+      background: #ffffff;
+      color: var(--primary-dark);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .pin-input:focus {
+      border-color: var(--pastel-pink);
+      box-shadow: 0 0 0 3px rgba(255, 214, 224, 0.35);
+    }
+
+    .btn-pink {
+      width: 100%;
+      background: var(--btn-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: 20px;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(255, 112, 150, 0.35);
+      transition: all 0.2s;
+      margin-top: 14px;
+    }
+
+    .btn-pink:active {
+      transform: scale(0.98);
+    }
+
+    .error-text {
+      color: var(--primary-pink);
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    #dashboardView {
+      display: none;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 4px 6px;
+    }
+
+    .welcome-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-pink);
+    }
+
+    .logout-btn {
+      background: #ffffff;
+      color: var(--primary-pink);
+      border: 1.5px solid var(--border-soft);
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .panel-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border-radius: 26px;
+      padding: 20px 18px;
+      box-shadow: var(--glow-shadow);
+      border: 2px solid #ffffff;
+      margin-bottom: 16px;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      padding-left: 4px;
+      font-weight: 600;
+    }
+
+    .input-field, .textarea-field {
+      width: 100%;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border-soft);
+      border-radius: 18px;
+      font-size: 13.5px;
+      background: #ffffff;
+      color: var(--primary-dark);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .input-field:focus, .textarea-field:focus {
+      border-color: var(--pastel-pink);
+      box-shadow: 0 0 0 3px rgba(255, 214, 224, 0.35);
+    }
+
+    .preview-profile {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 10px;
+      display: block;
+      border: 3px solid var(--border-soft);
+    }
+
+    .reviews-admin-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .review-item {
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-delete {
+      background: var(--soft-pink);
+      border: 1px solid var(--border-soft);
+      color: var(--primary-pink);
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- LOGIN PIN 4 หลัก (1902) -->
+    <div id="loginView">
+      <div class="login-card">
+        <h1 class="login-title">Admin Login ♡</h1>
+        <p class="login-sub">ใส่รหัสผ่าน 4 หลักเพื่อเข้าสู่ระบบ</p>
+        
+        <form onsubmit="handleLogin(event)">
+          <input type="password" id="pinInput" class="pin-input" maxlength="4" placeholder="••••" pattern="[0-9]*" inputmode="numeric" required autofocus>
+          <button type="submit" class="btn-pink">เข้าสู่ระบบ ✨</button>
+          <p id="loginError" class="error-text">รหัสผ่านไม่ถูกต้องค่ะ</p>
+        </form>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardView">
+      
+      <div class="top-bar">
+        <div class="welcome-text">welcome admin ♡</div>
+        <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">🎀 ข้อมูลร้านและโปรไฟล์</div>
+
+        <div class="form-group">
+          <label>รูปโปรไฟล์</label>
+          <img id="profilePreview" class="preview-profile" src="https://i.postimg.cc/Qd1mRrk5/image-8.png" alt="Profile Preview">
+          <input type="text" id="profileUrlInput" class="input-field" placeholder="https://i.postimg.cc/Qd1mRrk5/image-8.png" oninput="document.getElementById('profilePreview').src = this.value">
+        </div>
+
+        <div class="form-group">
+          <label>หรือเลือกอัปโหลดโปรไฟล์จากเครื่อง</label>
+          <input type="file" accept="image/*" class="input-field" onchange="uploadImage(this)">
+        </div>
+
+        <div class="form-group">
+          <label>ชื่อร้าน</label>
+          <input type="text" id="storeNameInput" class="input-field" placeholder="slomiertis ♡">
+        </div>
+
+        <div class="form-group">
+          <label>ข้อความไบโอ</label>
+          <textarea id="storeBioInput" class="textarea-field" rows="3" placeholder="welcome to slomiertis’s world..."></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+          <div class="form-group">
+            <label>Followers</label>
+            <input type="text" id="statFollowersInput" class="input-field" placeholder="595">
+          </div>
+          <div class="form-group">
+            <label>Following</label>
+            <input type="text" id="statFollowingInput" class="input-field" placeholder="595">
+          </div>
+        </div>
+
+        <button type="button" class="btn-pink" id="saveBtn" onclick="saveSiteConfig()">
+          ☁️ บันทึกการเปลี่ยนแปลงหน้าเว็บ ♡
+        </button>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">🗑️ รีวิวจากลูกค้า (กดลบได้)</div>
+        <div class="reviews-admin-list" id="reviewsAdminContainer">
+          <p style="text-align: center; color: var(--text-muted); font-size: 12.5px;">กำลังโหลดรีวิว...</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // กำหนด PIN เป็น 1902 ตามสั่ง
+    const ADMIN_PIN = "1902";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpAGDSy1NRgmLV_g7qJrCpwOhU9MrfQyY",
+      authDomain: "benefitie.firebaseapp.com",
+      projectId: "benefitie",
+      storageBucket: "benefitie.firebasestorage.app",
+      messagingSenderId: "270365672215",
+      appId: "1:270365672215:web:230d1491091e26ce83ed52"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    let siteConfig = {
+      profile: "https://i.postimg.cc/Qd1mRrk5/image-8.png",
+      storeName: "slomiertis ♡",
+      storeBio: "welcome to slomiertis’s world \n♡♡♡",
+      statFollowers: "595",
+      statFollowing: "595"
+    };
+
+    window.onload = function() {
+      if (sessionStorage.getItem('slomiertis_pin_auth') === 'true') {
+        showDashboard();
+      }
+    };
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('pinInput').value.trim();
+      const err = document.getElementById('loginError');
+
+      if (pin === ADMIN_PIN) {
+        sessionStorage.setItem('slomiertis_pin_auth', 'true');
+        err.style.display = 'none';
+        showDashboard();
+      } else {
+        err.style.display = 'block';
+        document.getElementById('pinInput').value = '';
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('slomiertis_pin_auth');
+      document.getElementById('dashboardView').style.display = 'none';
+      document.getElementById('loginView').style.display = 'flex';
+      document.getElementById('pinInput').value = '';
+    }
+
+    async function showDashboard() {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('dashboardView').style.display = 'block';
+
+      try {
+        // ดึงเฉพาะ slomiertis_site_config
+        const doc = await db.collection("slomiertis_site_config").doc("main_info").get();
+        if (doc.exists) {
+          siteConfig = { ...siteConfig, ...doc.data() };
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      renderConfig();
+      listenReviewsAdmin();
+    }
+
+    function renderConfig() {
+      document.getElementById('profilePreview').src = siteConfig.profile;
+      document.getElementById('profileUrlInput').value = siteConfig.profile;
+      document.getElementById('storeNameInput').value = siteConfig.storeName;
+      document.getElementById('storeBioInput').value = siteConfig.storeBio;
+      document.getElementById('statFollowersInput').value = siteConfig.statFollowers;
+      document.getElementById('statFollowingInput').value = siteConfig.statFollowing;
+    }
+
+    function uploadImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          siteConfig.profile = e.target.result;
+          document.getElementById('profilePreview').src = e.target.result;
+          document.getElementById('profileUrlInput').value = '';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    async function saveSiteConfig() {
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      btn.textContent = 'กำลังบันทึกข้อมูล... ⏳';
+
+      const urlVal = document.getElementById('profileUrlInput').value.trim();
+      if (urlVal) siteConfig.profile = urlVal;
+
+      siteConfig.storeName = document.getElementById('storeNameInput').value.trim();
+      siteConfig.storeBio = document.getElementById('storeBioInput').value.trim();
+      siteConfig.statFollowers = document.getElementById('statFollowersInput').value.trim();
+      siteConfig.statFollowing = document.getElementById('statFollowingInput').value.trim();
+
+      try {
+        // บันทึกลง slomiertis_site_config เด็ดขาด
+        await db.collection("slomiertis_site_config").doc("main_info").set(siteConfig);
+        alert('✨ บันทึกข้อมูลขึ้นระบบสำเร็จ หน้าเว็บเปลี่ยนทันทีค่ะ!');
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการบันทึกค่ะ');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '☁️ บันทึกการเปลี่ยนแปลงหน้าเว็บ ♡';
+      }
+    }
+
+    function listenReviewsAdmin() {
+      // ดึงเฉพาะ slomiertis_reviews
+      db.collection("slomiertis_reviews")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(snapshot => {
+          const container = document.getElementById('reviewsAdminContainer');
+          if (snapshot.empty) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 12.5px;">ไม่มีรีวิวในระบบ</p>';
+            return;
+          }
+
+          let html = '';
+          snapshot.forEach(doc => {
+            const r = doc.data();
+            html += `
+              <div class="review-item">
+                <div style="flex: 1; padding-right: 8px;">
+                  <div style="font-weight: 700; font-size: 13.5px;">${r.name}</div>
+                  <div style="font-size: 12px; margin: 2px 0;">${'⭐️'.repeat(r.stars || 5)}</div>
+                  <div style="font-size: 12.5px; color: #725b60;">${r.feedback}</div>
+                </div>
+                <button class="btn-delete" onclick="deleteReview('${doc.id}')">ลบ 🗑️</button>
+              </div>
+            `;
+          });
+          container.innerHTML = html;
+        });
+    }
+
+    async function deleteReview(docId) {
+      if (confirm('ต้องการลบรีวิวนี้ใช่หรือไม่คะ? 🗑️')) {
+        try {
+          // ลบเฉพาะใน slomiertis_reviews
+          await db.collection("slomiertis_reviews").doc(docId).delete();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
