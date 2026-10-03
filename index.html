@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>slomiertis ♡</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #fff5f7;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --pastel-pink: #ffd7e2;
+      --soft-pink: #fff0f4;
+      --primary-pink: #ff85a2;
+      --primary-dark: #7a5059;
+      --text-muted: #bda1a8;
+      --border-soft: #fde8ef;
+      --btn-gradient: linear-gradient(135deg, #ff9ebb 0%, #ff7096 100%);
+      --glow-shadow: 0 10px 28px rgba(255, 175, 195, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', 'Mitr', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #fff0f3 0%, #fff6f8 60%, #ffedf2 100%);
+      color: var(--primary-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating Emojis (🪷 🩷 🍥 🐱 🪽) */
+    .floating-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .float-item {
+      position: absolute;
+      bottom: -50px;
+      font-size: 21px;
+      animation: floatUp 11s linear infinite;
+      opacity: 0.7;
+      filter: drop-shadow(0 2px 6px rgba(255, 182, 193, 0.4));
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      15% { opacity: 0.85; }
+      85% { opacity: 0.85; }
+      100% { transform: translateY(-115vh) rotate(360deg); opacity: 0; }
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Top Navigation Bar */
+    .nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 10px 16px;
+      border-radius: 24px;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 4px 18px rgba(255, 182, 193, 0.25);
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-pink);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 10px;
+      border-radius: 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn.active {
+      background: var(--soft-pink);
+      color: var(--primary-pink);
+      font-weight: 700;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card กล่องเนื้อหาหลัก */
+    .main-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border-radius: 30px;
+      padding: 24px 20px;
+      box-shadow: var(--glow-shadow);
+      border: 2px solid #ffffff;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .profile-img-container {
+      display: inline-block;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .profile-img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #ffffff;
+      box-shadow: 0 6px 20px rgba(255, 175, 195, 0.45);
+      background: #ffffff;
+      display: block;
+    }
+
+    .shop-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 6px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .stats-row span b {
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .bio-box {
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: #7d5b62;
+      margin-bottom: 20px;
+      white-space: pre-line;
+      padding: 0 6px;
+    }
+
+    .action-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .action-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 1.5px solid var(--border-soft);
+      padding: 13px 18px;
+      border-radius: 20px;
+      text-decoration: none;
+      color: var(--primary-dark);
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(255, 214, 224, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:active {
+      transform: scale(0.98);
+      background: var(--soft-pink);
+    }
+
+    .action-btn .sub-text {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .score-card {
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 14px 12px;
+      border: 1.5px solid var(--border-soft);
+      box-shadow: 0 3px 10px rgba(255, 214, 224, 0.2);
+    }
+
+    .score-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 2px;
+    }
+
+    .score-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Reviews Section */
+    .review-header-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 4px;
+    }
+
+    .review-sub-title {
+      font-size: 12.5px;
+      color: #9c8388;
+      margin-bottom: 16px;
+    }
+
+    .btn-write-review {
+      width: 100%;
+      background: var(--btn-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 13px;
+      border-radius: 22px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255, 112, 150, 0.38);
+      transition: all 0.2s ease;
+      margin-bottom: 18px;
+    }
+
+    .btn-write-review:active {
+      transform: scale(0.98);
+    }
+
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .review-item {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border-soft);
+      text-align: left;
+      box-shadow: 0 3px 10px rgba(255, 214, 224, 0.15);
+    }
+
+    .review-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .reviewer-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .reviewer-stars {
+      font-size: 12px;
+    }
+
+    .reviewer-msg {
+      font-size: 12.5px;
+      color: #6d545a;
+      line-height: 1.5;
+    }
+
+    .reviewer-date {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .pink-info-box {
+      background: var(--soft-pink);
+      border: 1.5px dashed var(--pastel-pink);
+      border-radius: 20px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: var(--primary-dark);
+    }
+
+    .pink-info-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 4px;
+    }
+
+    /* Modal เขียนรีวิว */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 30, 35, 0.45);
+      backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: #ffffff;
+      border-radius: 26px;
+      padding: 22px 20px;
+      box-shadow: 0 16px 40px rgba(255, 175, 195, 0.45);
+      border: 2px solid var(--soft-pink);
+      animation: popIn 0.22s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-pink);
+    }
+
+    .close-btn {
+      background: var(--soft-pink);
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: var(--primary-pink);
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .star-select-box {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: 0.25;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .star-btn.active {
+      opacity: 1;
+      transform: scale(1.12);
+    }
+
+    .input-field, .textarea-field {
+      width: 100%;
+      padding: 11px 16px;
+      border: 1.5px solid var(--border-soft);
+      border-radius: 16px;
+      font-size: 13px;
+      background: #ffffff;
+      color: var(--primary-dark);
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .input-field:focus, .textarea-field:focus {
+      border-color: var(--pastel-pink);
+      box-shadow: 0 0 0 3px rgba(255, 214, 224, 0.35);
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- เพลงออโต้ (Autoplay + Loop) -->
+  <audio id="bgMusic" loop autoplay playsinline src="https://files.catbox.moe/7z9ha6.mp3"></audio>
+
+  <!-- Floating Emojis -->
+  <div class="floating-container" id="emojiContainer"></div>
+
+  <div class="container">
+
+    <!-- Top Navigation Bar 4 แท็บ -->
+    <div class="nav-bar">
+      <div class="brand" id="brandText">slomiertis ♡</div>
+      <div class="nav-links">
+        <button type="button" class="nav-btn active" id="tabNavHome" onclick="switchNav('home')">Home</button>
+        <button type="button" class="nav-btn" id="tabNavReviews" onclick="switchNav('reviews')">Reviews</button>
+        <button type="button" class="nav-btn" id="tabNavContact" onclick="switchNav('contact')">Contact</button>
+        <button type="button" class="nav-btn" id="tabNavDetails" onclick="switchNav('details')">Details</button>
+      </div>
+    </div>
+
+    <!-- 1. หน้า HOME -->
+    <div id="homeSection" class="tab-content active">
+      <div class="main-card">
+        
+        <div class="profile-img-container">
+          <img id="mainProfile" class="profile-img" src="https://i.postimg.cc/Qd1mRrk5/image-8.png" alt="Profile">
+        </div>
+
+        <h1 class="shop-title" id="shopTitleText">slomiertis ♡</h1>
+
+        <div class="stats-row">
+          <span><b id="statReviews">0</b> reviews</span>
+          <span><b id="statFollowers">595</b> followers</span>
+          <span><b id="statFollowing">595</b> following</span>
+        </div>
+
+        <div class="bio-box" id="bioBoxText">welcome to slomiertis’s world 
+♡♡♡</div>
+
+        <div class="action-links">
+          <a id="lineChatBtn" href="https://lin.ee/wLuYEB6" target="_blank" class="action-btn">
+            <span>💬 สั่งซื้อ / สอบถาม</span>
+            <span class="sub-text">click to chat</span>
+          </a>
+          <a id="twitterBtn" href="https://x.com/slomiertis?s=11" target="_blank" class="action-btn">
+            <span>♡ X : slomiertis</span>
+            <span class="sub-text">click to view</span>
+          </a>
+        </div>
+
+        <div class="score-grid">
+          <div class="score-card">
+            <div class="score-num" id="totalReviewsCount">0</div>
+            <div class="score-label">Total Reviews 💌</div>
+          </div>
+          <div class="score-card">
+            <div class="score-num" id="averageRating">5.0</div>
+            <div class="score-label">Rating ⭐️</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 2. หน้า REVIEWS -->
+    <div id="reviewsSection" class="tab-content">
+      <div class="main-card">
+        <h2 class="review-header-title">Reviews</h2>
+        <div class="review-sub-title">thanks for review and feedback ♡</div>
+
+        <button type="button" class="btn-write-review" onclick="openReviewModal()">
+          click to write review
+        </button>
+
+        <div class="reviews-list" id="reviewsContainer">
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 20px 0;">
+            ยังไม่มีรีวิว มาเป็นคนแรกเลยน้า ♡
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. หน้า CONTACT -->
+    <div id="contactSection" class="tab-content">
+      <div class="main-card">
+        <h2 class="review-header-title">Contact</h2>
+        <div class="review-sub-title">ช่องทางการติดต่อ</div>
+
+        <div class="pink-info-box">
+          <div class="pink-info-title">slomiertis</div>
+          line : @987ujmot ( มี @ )<br>
+          X : @slomiertis
+        </div>
+
+        <div class="action-links" style="margin-bottom: 0;">
+          <a href="https://lin.ee/wLuYEB6" target="_blank" class="action-btn">
+            <span>💬 Line official</span>
+            <span class="sub-text">@987ujmot</span>
+          </a>
+          <a href="https://x.com/slomiertis?s=11" target="_blank" class="action-btn">
+            <span>🔗 X</span>
+            <span class="sub-text">@slomiertis</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. หน้า DETAILS -->
+    <div id="detailsSection" class="tab-content">
+      <div class="main-card">
+        <h2 class="review-header-title">Details</h2>
+        <div class="review-sub-title">about ♡ slomiertis</div>
+
+        <div class="pink-info-box" style="text-align: left; margin-bottom: 0; padding: 18px 20px;">
+          <div style="font-weight: 700; color: var(--primary-pink); margin-bottom: 4px;">welcome to slomiertis’s world</div>
+          <div style="margin-bottom: 12px; color: var(--primary-pink);">♡♡♡</div>
+          <div>𓈒  app premium</div>
+          <div>𓈒  sticker theme emoji melody line</div>
+          <div>𓈒  gmail</div>
+          <div> etc.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">slomiertis ♡</div>
+
+  </div>
+
+  <!-- POPUP FORM เขียนรีวิว -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-card">
+      <div class="modal-top">
+        <span class="modal-title">+ เขียนรีวิวให้ร้านค้า ♡</span>
+        <button type="button" class="close-btn" onclick="closeReviewModal()">✕</button>
+      </div>
+
+      <div class="star-select-box">
+        <button type="button" class="star-btn active" onclick="setStars(1)">⭐️</button>
+        <button type="button" class="star-btn active" onclick="setStars(2)">⭐️</button>
+        <button type="button" class="star-btn active" onclick="setStars(3)">⭐️</button>
+        <button type="button" class="star-btn active" onclick="setStars(4)">⭐️</button>
+        <button type="button" class="star-btn active" onclick="setStars(5)">⭐️</button>
+      </div>
+
+      <input type="text" class="input-field" id="customerName" placeholder="ชื่อของคุณ">
+      <textarea class="textarea-field" id="customerFeedback" rows="3" placeholder="เขียนความประทับใจตรงนี้ได้เลยนะคะ..."></textarea>
+
+      <button type="button" class="btn-write-review" id="submitReviewBtn" style="margin-bottom: 0;" onclick="sendReview()">
+        ส่งรีวิว ♡
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function switchNav(tab) {
+      const tabs = ['home', 'reviews', 'contact', 'details'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(t + 'Section');
+        const btn = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (t === tab) {
+          sec.classList.add('active');
+          btn.classList.add('active');
+        } else {
+          sec.classList.remove('active');
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function openReviewModal() {
+      document.getElementById('reviewModal').classList.add('active');
+    }
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.remove('active');
+    }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpAGDSy1NRgmLV_g7qJrCpwOhU9MrfQyY",
+      authDomain: "benefitie.firebaseapp.com",
+      projectId: "benefitie",
+      storageBucket: "benefitie.firebasestorage.app",
+      messagingSenderId: "270365672215",
+      appId: "1:270365672215:web:230d1491091e26ce83ed52"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // ชี้ไปที่ slomiertis_site_config เด็ดขาด
+    db.collection("slomiertis_site_config").doc("main_info").onSnapshot(doc => {
+      if (doc.exists) {
+        const d = doc.data();
+        if (d.profile) document.getElementById('mainProfile').src = d.profile;
+        if (d.storeName) {
+          document.getElementById('brandText').textContent = d.storeName;
+          document.getElementById('shopTitleText').textContent = d.storeName;
+        }
+        if (d.storeBio) document.getElementById('bioBoxText').textContent = d.storeBio;
+        if (d.statFollowers) document.getElementById('statFollowers').textContent = d.statFollowers;
+        if (d.statFollowing) document.getElementById('statFollowing').textContent = d.statFollowing;
+      }
+    });
+
+    let currentRating = 5;
+    function setStars(star) {
+      currentRating = star;
+      const btns = document.querySelectorAll('.star-btn');
+      btns.forEach((btn, idx) => {
+        if (idx < star) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+
+    function listenReviews() {
+      // ชี้ไปที่ slomiertis_reviews เด็ดขาด
+      db.collection("slomiertis_reviews")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(snapshot => {
+          const container = document.getElementById('reviewsContainer');
+          const countNum = document.getElementById('totalReviewsCount');
+          const statRev = document.getElementById('statReviews');
+          const avgNum = document.getElementById('averageRating');
+
+          if (snapshot.empty) {
+            container.innerHTML = '<p style="font-size: 12.5px; color: var(--text-muted); margin: 20px 0;">ยังไม่มีรีวิว มาเป็นคนแรกเลยน้า ♡</p>';
+            countNum.textContent = '0';
+            statRev.textContent = '0';
+            avgNum.textContent = '5.0';
+            return;
+          }
+
+          let html = '';
+          let totalStars = 0;
+          let count = 0;
+
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            count++;
+            totalStars += (data.stars || 5);
+            html += `
+              <div class="review-item">
+                <div class="review-item-top">
+                  <span class="reviewer-name">${data.name}</span>
+                  <span class="reviewer-stars">${'⭐️'.repeat(data.stars || 5)}</span>
+                </div>
+                <div class="reviewer-msg">${data.feedback}</div>
+                <div class="reviewer-date">${data.dateStr || 'เมื่อเร็วๆ นี้'}</div>
+              </div>
+            `;
+          });
+
+          container.innerHTML = html;
+          countNum.textContent = count;
+          statRev.textContent = count;
+          avgNum.textContent = (totalStars / count).toFixed(1);
+        });
+    }
+
+    async function sendReview() {
+      const name = document.getElementById('customerName').value.trim();
+      const feedback = document.getElementById('customerFeedback').value.trim();
+      const btn = document.getElementById('submitReviewBtn');
+
+      if (!name || !feedback) {
+        alert('กรุณากรอกชื่อและข้อความรีวิวก่อนส่งนะคะ ♡');
+        return;
+      }
+
+      btn.disabled = true;
+      try {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+
+        // บันทึกลง slomiertis_reviews เด็ดขาด
+        await db.collection("slomiertis_reviews").add({
+          name: name,
+          stars: currentRating,
+          feedback: feedback,
+          dateStr: dateStr,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById('customerName').value = '';
+        document.getElementById('customerFeedback').value = '';
+        setStars(5);
+        closeReviewModal();
+        alert('ขอบคุณสำหรับรีวิวนะคะ ♡');
+      } catch (e) {
+        alert('ส่งรีวิวไม่สำเร็จ ลองใหม่อีกครั้งนะคะ');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    listenReviews();
+
+    const music = document.getElementById('bgMusic');
+    function startMusic() {
+      if (music && music.paused) {
+        music.play().catch(() => {});
+      }
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      startMusic();
+      document.body.addEventListener('click', startMusic, { once: true });
+      document.body.addEventListener('touchstart', startMusic, { once: true });
+    });
+
+    const floatIcons = ['🪷', '🩷', '🍥', '🐱', '🪽'];
+    const emojiContainer = document.getElementById('emojiContainer');
+    function createFloat() {
+      const el = document.createElement('div');
+      el.className = 'float-item';
+      el.textContent = floatIcons[Math.floor(Math.random() * floatIcons.length)];
+      el.style.left = Math.random() * 92 + 'vw';
+      el.style.animationDuration = (8 + Math.random() * 5) + 's';
+      emojiContainer.appendChild(el);
+      setTimeout(() => { el.remove(); }, 14000);
+    }
+    setInterval(createFloat, 1200);
+  </script>
+</body>
+</html>
